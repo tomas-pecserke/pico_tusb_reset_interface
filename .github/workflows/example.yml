@@ -1,0 +1,38 @@
+name: Build example
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clean workspace
+        run: |
+          echo "Cleaning up previous run"
+          rm -rf "${{ github.workspace }}"
+          mkdir -p "${{ github.workspace }}"
+
+      - uses: actions/checkout@v3
+
+      - name: Install Arm Toolchain
+        id: arm
+        uses: turtlesec-no/get-arm-toolchain@main
+
+      - name: Configure CMake
+        run: |
+          cmake -B ${{github.workspace}}/example/build \
+            -S ${{github.workspace}}/example \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPICO_SDK_FETCH_FROM_GIT=ON \
+            -DPICO_EXTRAS_FETCH_FROM_GIT=ON
+
+      - name: Build
+        run: make -C ${{github.workspace}}/example/build
